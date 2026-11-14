@@ -1,9 +1,10 @@
-# (앱 이름)
+# PaceNote (페이스노트)
 
-> (앱 한 줄 소개)
+> 평소의 나를 기준으로 안전운전을 코칭하고, 위험한 순간은 차량 신호와 음성으로 기록하는 **개인 맞춤 안전운전 앱**
 
-2026 현대자동차그룹 차량용 앱 개발 공모전 **Code your App into Pleos App Market** 출품작입니다.
-Pleos Playground SDK·API를 활용해 차량 데이터 기반 인카 서비스를 구현합니다.
+2026 현대자동차그룹 차량용 앱 개발 공모전 **Code your App into Pleos App Market** 출품작 · Pleos Connect 인포테인먼트용 Android 앱
+
+이름의 유래: 랠리 경기에서 코드라이버가 코스와 주행을 기록하는 **페이스노트**. 내 운전 페이스(Pace)를 배우고, 중요한 순간을 기록(Note)합니다.
 
 ---
 
@@ -11,100 +12,95 @@ Pleos Playground SDK·API를 활용해 차량 데이터 기반 인카 서비스�
 
 | 항목 | 내용 |
 | --- | --- |
-| 앱 이름 | (앱 이름) |
-| 한 줄 소개 | (한 줄 소개) |
-| 분야 | (예: 인카 엔터테인먼트 / 모빌리티 라이프 케어 / 안전 운전 / 패밀리·동승자 케어) |
-| 참가 형태 | (개인 / 팀) |
+| 앱 이름 | PaceNote (페이스노트) |
+| 분야 | 스마트 드라이빙 & 안전 |
+| 참가 형태 | 개인 (대학원생) |
 
 ### 해결하려는 문제
-- (운전자·탑승자가 겪는 불편 또는 기회)
+- 운전 습관은 사람마다 다른데 안전 기준은 하나뿐이라, 알림이 과하거나 부족하다.
+- 블랙박스 영상만으로는 위험했던 순간을 찾기 어렵고, **운전자가 감속했는지 차량(크루즈)이 감속했는지** 알 수 없다.
 
 ### 핵심 기능
-- (기능 1)
-- (기능 2)
-- (기능 3)
+| 구분 | 기능 |
+| --- | --- |
+| 매 주행 | **내 기준 학습**: 감속 구간마다 최대 감속을 쌓아 '평소의 나' 기준을 만들고, 그보다 센 감속만 '내 급감속'으로 판단 |
+| 매 주행 | **민감도(민감/보통/둔감)·음성 알림 빈도(자주/보통/가끔/끄기)** 를 운전자 프로필별로 설정 |
+| 매 주행 | **주행 후 요약**: "내 급감속 n회 · 평소보다 많아요" + 최근 7회 비교 |
+| 위험한 순간 | **차량이 스스로 감속**: 크루즈 작동(ACTIVATED) 중 브레이크 없이 급감속 → 조용히 기록, 내 평가에서 제외 |
+| 위험한 순간 | **🎤 말로 기록하기**: 버튼을 누르고 말하면 그 순간의 위치·차량 상태와 함께 진술 저장 |
+| 위험한 순간 | **사고 감지**: 좌석별 에어백 전개 시 자동 기록 + 음성 안부 확인 |
 
-### 활용하는 차량 데이터·API
-- (예: 주행 상태, 속도, 위치, 충전 정보 등)
+### 사람과 자동의 경계
+- 자동: 신호 감지 · 속도 계산 · 이벤트 기록 · 학습
+- 사람: 프로필 · 민감도 · 알림 빈도 · 기준 다시 배우기 · 기록 삭제 · 위치 권한 허용
+- 하지 않음: **차량 제어** (조회용 퍼미션만 사용)
+
+---
+
+## 🔌 사용한 Pleos Connect SDK
+
+| SDK | 버전 | 사용 API | 용도 |
+| --- | --- | --- | --- |
+| Vehicle | 2.3.2 | `Brake.registerBrakePedalStatus` | 운전자 제동 여부 |
+| | | `DrivingMode.registerCruiseControlState` / `registerCruiseControlTargetSpeed` | 크루즈 제어 중 여부, 목표 속도 |
+| | | `Safety.registerSeatAirbagDeployed` / `registerPowerDownWarningIndicator` | 사고·차량 이상 |
+| FusedLocation | 1.1.3 | `registerFusedLocationCallback` | 위치 → 속도·감속 계산 |
+| TextToSpeech | 3.3.1 | `speak` (ON_DEVICE) | 주행 중 음성 안내 |
+| SpeechToText | 3.3.1 | `request` + `ResultListener` (ON_DEVICE) | 음성 진술 기록 |
+
+퍼미션: `CAR_DRIVE`, `CAR_SAFETY`, `FUSED_LOCATION`, `TTS_SERVICE`, `STT_SERVICE`
 
 ---
 
 ## ▶️ 실행 방법
 
 ```bash
-# 1. 저장소 클론
 git clone https://github.com/Chaewon-Park-STUDY/Pleos-Car-App-Contest.git
-cd Pleos-Car-App-Contest
-
-# 2. 빌드
-./gradlew assembleRelease
 ```
-
-또는 `apk/` 폴더의 APK를 Pleos Playground 테스트 환경에 설치해 실행합니다.
+1. Android Studio 로 열기 → Gradle Sync (Pleos Maven 저장소는 `settings.gradle.kts` 에 등록되어 있음)
+2. Pleos Connect Emulator(AVD) 선택 → ▶ Run
+3. 첫 실행: 운전자 이름 입력 → 동의 → 위치 권한 허용
+4. 홈 오른쪽 **데모 모드**: ① 평소 주행 5회 기록(학습) → ② 시연 주행 시작
+   - Virtual Console 로 브레이크·크루즈·에어백·위치를 조작해도 동일하게 동작합니다.
 
 ---
 
-## 🧪 테스트 환경 및 설정
+## 🧪 테스트 환경
 
 | 항목 | 내용 |
 | --- | --- |
-| 개발 플랫폼 | Pleos Playground |
-| Android Studio | (버전) |
-| SDK / API | Pleos Playground SDK (버전) |
-| 최소 SDK | (API 레벨) |
-| 필요한 설정 | (API 키, 권한, 에뮬레이터 설정 등) |
+| Pleos Connect Emulator | (버전 기입) |
+| 화면 규격 | (해상도 기입) |
+| Android Studio | Rabbit 2 (2026.2.2 Patch 1) |
+| 언어 / minSdk / targetSdk | Kotlin · 28 · 37 |
+| UI | Jetpack Compose (Material 3) |
+
+단위 테스트: `app/src/test/.../CoreLogicTest.kt` (속도 계산, 이벤트 분류, 개인 기준 학습, 알림 정책, 데모 전체 흐름 등 35개 검사)
 
 ---
 
 ## 📦 APK
-
-- 위치: [`apk/`](./apk)
-- 파일명: `(팀명)_(앱이름)_release.apk`
-- 용량 초과 시: [GitHub Releases](../../releases)
-
----
+- 위치: [`apk/`](./apk) · 파일명: `박채원_PaceNote_release.apk`
 
 ## 🎬 시연 영상
-
-- (시연 영상 링크)
+- (링크 기입)
 
 ---
 
-## 📁 폴더 구조
+## 📁 구조
 
 ```
-.
-├── apk/        # 실행 가능한 release APK
-├── docs/       # 기획서, 화면 설계, 참고 자료
-└── app/        # 앱 소스 코드
+app/src/main/java/com/chaewon/safedrive/
+├── core/     판단 로직 (속도 계산, 개인 기준, 이벤트 판단, 주행 요약) — SDK 의존성 없음
+├── app/      DriveController (상태 관리), 저장소 인터페이스
+├── signal/   Pleos Vehicle·FusedLocation 어댑터, 데모 시나리오
+├── voice/    Pleos TTS·STT 어댑터 (+ 기본 TTS 대체)
+├── data/     기기 내 JSON 저장 (외부 전송 없음)
+└── ui/       Compose 화면 (프로필, 홈, 기록, 주행 요약, 설정)
+docs/         기획 노트, SDK 사용 계획, 설계 문서, 시연 대본
 ```
-
----
-
-## 🔗 링크
-
-- [공모전 공식 홈페이지](https://appdevchallenge.auto-hmg.io/)
-- [참가 가이드](https://appdevchallenge.auto-hmg.io/guide)
-- [지원·제출 방법](https://appdevchallenge.auto-hmg.io/guide/submission)
-- [개발 환경 안내](https://appdevchallenge.auto-hmg.io/guide/development)
-- [공지사항](https://appdevchallenge.auto-hmg.io/notice) · [FAQ](https://appdevchallenge.auto-hmg.io/faq)
-
----
-
-## 🗓️ 일정
-
-| 일정 | 내용 |
-| --- | --- |
-| 2026.10.21 ~ 11.15 | 접수 |
-| 2026.11.23 | 1차 서류심사 결과 발표 |
-| 2026.12.03 ~ 12.04 | 2차 최종 PT 심사 (오프라인) |
-| 2026.12.18 | 최종 선정 결과 발표 |
-| 2027.02 | 현대자동차그룹 행사 전시 및 시상식 |
-
----
 
 ## 👤 만든 사람
-
 | 이름 | 역할 | GitHub |
 | --- | --- | --- |
-| 박채원 | (역할) | [@Chaewon-Park-STUDY](https://github.com/Chaewon-Park-STUDY) |
+| 박채원 | 기획 · 개발 | [@Chaewon-Park-STUDY](https://github.com/Chaewon-Park-STUDY) |
