@@ -25,6 +25,7 @@ data class UiState(
     val lastSpoken: String? = null,
     val availability: SignalAvailability = SignalAvailability(),
     val demoRunning: Boolean = false,
+    val listening: String? = null,      // 음성 인식 중이면 지금까지 들은 문장 ("" = 듣는 중)
 )
 
 /**
@@ -95,7 +96,10 @@ class DriveController(
     fun deselectProfile() {
         persist()
         profile = null
-        _state.value = UiState(profiles = store.loadProfiles().map { ProfileInfo(it.id, it.name) })
+        _state.value = UiState(
+            profiles = store.loadProfiles().map { ProfileInfo(it.id, it.name) },
+            availability = _state.value.availability,
+        )
     }
 
     fun setSensitivity(s: Sensitivity) { threshold.sensitivity = s; persist(); publish() }
@@ -131,6 +135,15 @@ class DriveController(
     override fun onCruiseTarget(mps: Float?, now: Long) = detector.onCruiseTarget(mps)
     override fun onAirbag(deployed: Boolean, seat: String, now: Long) = detector.onAirbagDeployed(deployed, now, seat)
     override fun onVehicleWarning(active: Boolean, what: String, now: Long) = detector.onVehicleWarning(active, now, what)
+
+    /** 🎤 버튼으로 말한 내용 → 무조건 '직접 기록' (사람이 버튼을 눌러 의사를 밝혔으므로) */
+    fun recordVoiceNote(text: String, now: Long) {
+        if (profile == null) return
+        detector.manualBookmark(now, text.ifBlank { null })
+        say("기록했어요.")
+    }
+
+    fun setListening(text: String?) { _state.value = _state.value.copy(listening = text) }
 
     override fun onVoiceCommand(text: String, now: Long) {
         if (profile == null) return

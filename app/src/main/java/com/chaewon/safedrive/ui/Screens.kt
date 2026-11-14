@@ -2,6 +2,7 @@ package com.chaewon.safedrive.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,10 +37,10 @@ private val Calm = Color(0xFF81C784)
 private val CarColor = Color(0xFF90A4AE)
 
 @Composable
-fun AppRoot(controller: DriveController) {
+fun AppRoot(controller: DriveController, onMic: () -> Unit = {}) {
     val state by controller.state.collectAsState()
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        if (state.active == null) ProfileScreen(state, controller) else MainScreen(state, controller)
+        if (state.active == null) ProfileScreen(state, controller) else MainScreen(state, controller, onMic)
     }
 }
 
@@ -82,7 +83,7 @@ private fun ProfileScreen(state: UiState, c: DriveController) {
 // ---------------------------------------------------------------- 메인
 
 @Composable
-private fun MainScreen(state: UiState, c: DriveController) {
+private fun MainScreen(state: UiState, c: DriveController, onMic: () -> Unit) {
     var tab by remember { mutableStateOf(Tab.HOME) }
     // 주행 중에는 홈 화면만 (음성 중심). 정차 중에만 다른 화면 조작 가능.
     LaunchedEffect(state.driving) { if (state.driving) tab = Tab.HOME }
@@ -97,7 +98,7 @@ private fun MainScreen(state: UiState, c: DriveController) {
                 val enabled = !state.driving || t == Tab.HOME
                 TextButton(onClick = { tab = t }, enabled = enabled) {
                     Text(
-                        t.label, fontSize = 18.sp,
+                        t.label, fontSize = 18.sp, maxLines = 1, softWrap = false,
                         fontWeight = if (tab == t) FontWeight.Bold else FontWeight.Normal,
                         color = if (tab == t) MaterialTheme.colorScheme.primary else if (enabled) Color.LightGray else Color.DarkGray,
                     )
@@ -108,7 +109,7 @@ private fun MainScreen(state: UiState, c: DriveController) {
         }
         Box(Modifier.fillMaxSize().padding(20.dp)) {
             when (tab) {
-                Tab.HOME -> HomeScreen(state, c)
+                Tab.HOME -> HomeScreen(state, c, onMic)
                 Tab.RECORDS -> RecordsScreen(state)
                 Tab.SUMMARY -> SummaryScreen(state)
                 Tab.SETTINGS -> SettingsScreen(state, c)
@@ -120,13 +121,13 @@ private fun MainScreen(state: UiState, c: DriveController) {
 // ---------------------------------------------------------------- 홈
 
 @Composable
-private fun HomeScreen(state: UiState, c: DriveController) {
+private fun HomeScreen(state: UiState, c: DriveController, onMic: () -> Unit) {
     val scope = (LocalContext.current.applicationContext as SafeDriveApp).appScope
     var step by remember { mutableStateOf<String?>(null) }
     var job by remember { mutableStateOf<Job?>(null) }
 
     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-        Column(Modifier.weight(1.4f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(Modifier.weight(1.4f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(
                 if (state.driving) "안전 주행 중" else "정차 중",
                 fontSize = 40.sp, fontWeight = FontWeight.Bold,
@@ -155,11 +156,43 @@ private fun HomeScreen(state: UiState, c: DriveController) {
             }
 
             state.lastSpoken?.let { Text("🔊 \"$it\"", fontSize = 18.sp, color = MaterialTheme.colorScheme.secondary) }
+
+            // 음성 기록 (Pleos SpeechToText) — 큰 버튼 하나, 누르고 말하면 '직접 기록'
+            if (state.availability.speech) {
+                Button(
+                    onClick = onMic,
+                    modifier = Modifier.fillMaxWidth().height(72.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (state.listening != null) Warn else MaterialTheme.colorScheme.primary,
+                    ),
+                ) {
+                    Text(
+                        when {
+                            state.listening == null -> "🎤 말로 기록하기"
+                            state.listening.isEmpty() -> "듣고 있어요… (다시 누르면 멈춤)"
+                            else -> "🗣 \"${state.listening}\""
+                        },
+                        fontSize = 22.sp,
+                    )
+                }
+            }
+
+            // 지금 어떤 신호로 동작 중인지 정직하게 표시
+            val a = state.availability
+            val connected = listOfNotNull(
+                "위치".takeIf { a.location }, "브레이크".takeIf { a.brake }, "크루즈".takeIf { a.cruise },
+                "에어백".takeIf { a.airbag }, "음성인식".takeIf { a.speech },
+            )
+            Text(
+                if (connected.isEmpty()) "차량 신호 미연결 · 데모 모드로 확인할 수 있어요"
+                else "연결된 차량 신호: " + connected.joinToString(" · "),
+                fontSize = 14.sp, color = Color.Gray,
+            )
         }
 
         // 데모 모드 패널 (시연 영상용)
         Card(Modifier.weight(1f)) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("데모 모드", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text("에뮬레이터 신호 대신 가상 주행을 재생해요.", fontSize = 14.sp, color = Color.Gray)
                 OutlinedButton(
@@ -211,9 +244,9 @@ private fun RecordsScreen(state: UiState) {
     val shown = state.events.filter { filter.types == null || it.type in filter.types!! }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Filter.entries.forEach { f ->
-                FilterChip(selected = filter == f, onClick = { filter = f }, label = { Text(f.label, fontSize = 16.sp) })
+                FilterChip(selected = filter == f, onClick = { filter = f }, label = { Text(f.label, fontSize = 16.sp, maxLines = 1, softWrap = false) })
             }
         }
         if (shown.isEmpty()) Text("아직 기록이 없어요.", fontSize = 18.sp, color = Color.Gray)
@@ -300,7 +333,7 @@ private fun Bars(counts: List<Int>) {
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("$n", fontSize = 14.sp)
                 Box(
-                    Modifier.fillMaxWidth().height((8 + 140 * n / max).dp)
+                    Modifier.fillMaxWidth().height((8 + 110 * n / max).dp)
                         .background(if (today) Warn else Color(0xFF455A64), RoundedCornerShape(6.dp)),
                 )
                 Text(if (today) "이번" else "${counts.size - 1 - i}회 전", fontSize = 12.sp, color = Color.Gray)
