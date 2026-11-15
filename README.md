@@ -81,7 +81,7 @@ git clone https://github.com/pacenote-dev/Pleos-Car-App-Contest.git
 ---
 
 ## 📦 APK
-- 위치: [`apk/`](./apk) · 파일명: `PaceNote.apk`
+- 다운로드: [Releases v1.0](https://github.com/pacenote-dev/Pleos-Car-App-Contest/releases/tag/v1.0) · 파일명: `PaceNote.apk`
 
 ## 🎬 시연 영상
 - https://youtu.be/6McIWpKU4yg
