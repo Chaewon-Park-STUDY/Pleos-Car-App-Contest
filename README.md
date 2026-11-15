@@ -14,7 +14,7 @@
 | --- | --- |
 | 앱 이름 | PaceNote (페이스노트) |
 | 분야 | 스마트 드라이빙 & 안전 |
-| 참가 형태 | 개인 (대학원생) |
+| 참가 형태 | 개인 |
 
 ### 해결하려는 문제
 - 운전 습관은 사람마다 다른데 안전 기준은 하나뿐이라, 알림이 과하거나 부족하다.
@@ -55,7 +55,7 @@
 ## ▶️ 실행 방법
 
 ```bash
-git clone https://github.com/Chaewon-Park-STUDY/Pleos-Car-App-Contest.git
+git clone https://github.com/pacenote-dev/Pleos-Car-App-Contest.git
 ```
 1. Android Studio 로 열기 → Gradle Sync (Pleos Maven 저장소는 `settings.gradle.kts` 에 등록되어 있음)
 2. 에뮬레이터(AVD) 선택 → ▶ Run
@@ -81,10 +81,10 @@ git clone https://github.com/Chaewon-Park-STUDY/Pleos-Car-App-Contest.git
 ---
 
 ## 📦 APK
-- 위치: [`apk/`](./apk) · 파일명: `박채원_PaceNote.apk`
+- 위치: [`apk/`](./apk) · 파일명: `PaceNote.apk`
 
 ## 🎬 시연 영상
-- https://youtu.be/Qa9ygTtlsio
+- https://youtu.be/6McIWpKU4yg
 
 ---
 
@@ -100,8 +100,3 @@ app/src/main/java/com/chaewon/safedrive/
 └── ui/       Compose 화면 (프로필, 홈, 기록, 주행 요약, 설정)
 docs/         기획 노트, SDK 사용 계획, 설계 문서, 시연 대본
 ```
-
-## 👤 만든 사람
-| 이름 | 역할 | GitHub |
-| --- | --- | --- |
-| 박채원 | 기획 · 개발 | [@Chaewon-Park-STUDY](https://github.com/Chaewon-Park-STUDY) |
