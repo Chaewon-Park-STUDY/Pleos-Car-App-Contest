@@ -58,10 +58,10 @@
 git clone https://github.com/Chaewon-Park-STUDY/Pleos-Car-App-Contest.git
 ```
 1. Android Studio 로 열기 → Gradle Sync (Pleos Maven 저장소는 `settings.gradle.kts` 에 등록되어 있음)
-2. Pleos Connect Emulator(AVD) 선택 → ▶ Run
+2. 에뮬레이터(AVD) 선택 → ▶ Run
 3. 첫 실행: 운전자 이름 입력 → 동의 → 위치 권한 허용
 4. 홈 오른쪽 **데모 모드**: ① 평소 주행 5회 기록(학습) → ② 시연 주행 시작
-   - Virtual Console 로 브레이크·크루즈·에어백·위치를 조작해도 동일하게 동작합니다.
+   - Pleos Connect Emulator 에서는 Virtual Console 신호(브레이크·크루즈·에어백·위치)를 받도록 구현되어 있습니다. 시연 영상은 일반 Android 에뮬레이터 + 데모 모드로 촬영했습니다.
 
 ---
 
@@ -69,8 +69,9 @@ git clone https://github.com/Chaewon-Park-STUDY/Pleos-Car-App-Contest.git
 
 | 항목 | 내용 |
 | --- | --- |
-| Pleos Connect Emulator | (버전 기입) |
-| 화면 규격 | (해상도 기입) |
+| 에뮬레이터 | Android Emulator · Medium Phone (Android 17, API 37, x86_64) |
+| 화면 규격 | 2400 × 1080 가로 고정 (차량 화면과 같은 가로형 배치) |
+| 차량 신호 | Pleos SDK 연결 코드 포함 · 일반 에뮬레이터에서는 데모 모드로 같은 인터페이스에 신호 재생 |
 | Android Studio | Rabbit 2 (2026.2.2 Patch 1) |
 | 언어 / minSdk / targetSdk | Kotlin · 28 · 37 |
 | UI | Jetpack Compose (Material 3) |
@@ -80,10 +81,10 @@ git clone https://github.com/Chaewon-Park-STUDY/Pleos-Car-App-Contest.git
 ---
 
 ## 📦 APK
-- 위치: [`apk/`](./apk) · 파일명: `박채원_PaceNote_release.apk`
+- 위치: [`apk/`](./apk) · 파일명: `박채원_PaceNote.apk`
 
 ## 🎬 시연 영상
-- (링크 기입)
+- https://youtu.be/Qa9ygTtlsio
 
 ---
 

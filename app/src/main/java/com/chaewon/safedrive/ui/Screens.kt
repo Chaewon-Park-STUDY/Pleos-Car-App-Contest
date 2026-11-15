@@ -196,7 +196,7 @@ private fun HomeScreen(state: UiState, c: DriveController, onMic: () -> Unit) {
                 Text("데모 모드", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text("에뮬레이터 신호 대신 가상 주행을 재생해요.", fontSize = 14.sp, color = Color.Gray)
                 OutlinedButton(
-                    onClick = { DemoScenario().seedHistory(c, System.currentTimeMillis()) },
+                    onClick = { c.quiet = true; DemoScenario().seedHistory(c, System.currentTimeMillis()); c.quiet = false },
                     enabled = !state.demoRunning && !state.driving, modifier = Modifier.fillMaxWidth(),
                 ) { Text("① 평소 주행 5회 기록 (학습)") }
                 Button(

@@ -195,7 +195,11 @@ class DriveController(
         persist(); publish()
     }
 
+    /** 데모 학습(과거 주행 재생) 중에는 음성 안내를 하지 않는다 */
+    var quiet = false
+
     private fun say(text: String) {
+        if (quiet) return
         voice.speak(text)
         _state.value = _state.value.copy(lastSpoken = text)
     }
